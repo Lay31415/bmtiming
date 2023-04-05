@@ -1,7 +1,7 @@
 local exports = {
   name = "bmtiming",
   description = "beatmania timing viewer",
-  version = "0.1.0",
+  version = "0.1.1",
   author = { name = "Lay31415" },
   license = "MIT"
 }
@@ -99,7 +99,8 @@ function bmtiming.startplugin()
   local addresses
   local mem
   local s
-  local turn = {true, true}
+  local TT
+  local turn = {0,0,0,0,0, true, 0,0,0,0,0, true}
   local ioport
   local buttons = {}
   local menu_handler
@@ -141,32 +142,20 @@ function bmtiming.startplugin()
 
       -- Set buttons
       ioport = manager.machine.ioport
-      for i,j in pairs(ioport.ports[":BTN1"].fields) do
-        local key = tonumber(string.gsub(i, "%D", ""))
-        if key > 15 then
-          key = key - 14
-        else
-          key = key - 10
-        end
-        buttons["key" .. key] = j
-      end
-      for i,j in pairs(ioport.ports[":BTN2"].fields) do
-        if i == "Effect" then
-          buttons["Effect"] = j
-        else
-          local key = tonumber(string.gsub(i, "%D", ""))
-          if key > 20 then
-            key = key - 14
-            buttons["key" .. key] = j
-          else
-            key = key + 12
-          end
-          if not buttons["key" .. key] then
-            buttons["key" .. key] = j
-          end
-        end
-      end
-      -- for i,j in pairs(ioport.ports[":BTN3"].fields) do buttons[i]=j end
+      buttons = {
+        ioport.ports[":BTN1"]:field(0x10),
+        ioport.ports[":BTN1"]:field(0x08),
+        ioport.ports[":BTN1"]:field(0x04),
+        ioport.ports[":BTN1"]:field(0x02),
+        ioport.ports[":BTN1"]:field(0x01),
+        ioport.ports[":TT1"]:field(0xff),
+        ioport.ports[":BTN1"]:field(0x40),
+        ioport.ports[":BTN1"]:field(0x80),
+        ioport.ports[":BTN2"]:field(0x01),
+        ioport.ports[":BTN2"]:field(0x02),
+        ioport.ports[":BTN2"]:field(0x04),
+        ioport.ports[":TT2"]:field(0xff),
+      }
     end
   end
 
@@ -180,8 +169,9 @@ function bmtiming.startplugin()
 
     if playing[game] and mem:read_i8(playing[game]) == 0 then
       -- Turntable control is released except during performance
-      for i,j in pairs(ioport.ports[":TT1"].fields) do j:clear_value() end
-      for i,j in pairs(ioport.ports[":TT2"].fields) do j:clear_value() end
+      for i,button in ipairs(buttons) do
+        button:clear_value()
+      end
       return
     end
 
@@ -241,34 +231,32 @@ function bmtiming.startplugin()
 
       -- Auto play
       if state ~= 4 then
-        if config.autoscr and key == 6 then
-          -- TT1
-          if config.autotiming - 1 <= timing and timing < config.autotiming + config.on_frames then
-            if config.autotiming - 1 == timing then
-              -- Reverse direction of rotation for the first time only
-              turn[1] = not turn[1]
-            end
-            for i,j in pairs(ioport.ports[":TT1"].fields) do j:set_value(TTrotate(ioport.ports[":TT1"]:read(), turn[1])) end
+        if config.autoscr and (key == 6 or key == 12) then
+          -- Scratch
+          -- Set TT
+          if key == 6 then
+            TT = 1
+          elseif key == 12 then
+            TT = 2
           end
-        elseif config.autoscr and key == 12 then
-          -- TT2
+          -- Check timing
           if config.autotiming - 1 <= timing and timing < config.autotiming + config.on_frames then
             if config.autotiming - 1 == timing then
               -- Reverse direction of rotation for the first time only
-              turn[2] = not turn[2]
+              turn[TT] = not turn[TT]
             end
-            for i,j in pairs(ioport.ports[":TT1"].fields) do j:set_value(TTrotate(ioport.ports[":TT2"]:read(), turn[2])) end
+            buttons[key]:set_value(TTrotate(ioport.ports[":TT" .. TT]:read(), turn[TT]))
           end
         elseif config.autokey and key ~=6 and key ~= 12 then
-          -- keys
+          -- Keys
           if config.autotiming - 1 <= timing and timing < config.autotiming + config.on_frames then
-            buttons["key" .. key]:set_value(1)
+            buttons[key]:set_value(1)
           else
-            buttons["key" .. key]:clear_value()
+            buttons[key]:clear_value()
           end
         end
       elseif key ~=6 and key ~= 12 then
-        buttons["key" .. key]:clear_value()
+        buttons[key]:clear_value()
       end
     end
   end
