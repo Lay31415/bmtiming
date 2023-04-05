@@ -2,7 +2,7 @@
     "plugin": {
         "name": "bmtiming",
         "description": "beatmania timing viewer",
-        "version": "0.1.11",
+        "version": "0.1.2",
         "author": "Lay31415",
         "type": "plugin",
         "start": "false"

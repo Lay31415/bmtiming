@@ -1,7 +1,7 @@
 local exports = {
   name = "bmtiming",
   description = "beatmania timing viewer",
-  version = "0.1.1",
+  version = "0.1.2",
   author = { name = "Lay31415" },
   license = "MIT"
 }
@@ -46,7 +46,7 @@ function bmtiming.startplugin()
   }
   -- Address to determine playing in progress
   local playing = {
-    bm1stmix = 0x408a78,
+    bm1stmix = 0x408a56,
     bm2ndmix = 0x409375,
     bm3rdmix = 0x409737,
     bmcompmx = 0x409915,
