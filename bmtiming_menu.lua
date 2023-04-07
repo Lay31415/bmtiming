@@ -38,17 +38,16 @@ function lib:populate_menu(config)
 
     table.insert(menu, {_p('plugin-bmtiming', 'View timing'), tostring(config.view_timing), config.view_timing and 'l' or 'r'})
     table.insert(menu, {_p('plugin-bmtiming', 'View state'), tostring(config.view_state), config.view_state and 'l' or 'r'})
-    table.insert(menu, {_p('plugin-bmtiming', 'Auto SCR'), tostring(config.autoscr), config.autoscr and 'l' or 'r'})
-    table.insert(menu, {_p('plugin-bmtiming', 'Auto key'), tostring(config.autokey), config.autokey and 'l' or 'r'})
-    table.insert(menu, {_p('plugin-bmtiming', 'Auto timing'), tostring(config.autotiming), 'lr'})
-    table.insert(menu, {_p('plugin-bmtiming', 'Rotate angle'), tostring(config.rotate_angle), config.rotate_angle > 0 and 'lr' or 'r'})
-    table.insert(menu, {_p('plugin-bmtiming', 'On frames'), tostring(config.on_frames), config.on_frames > 0 and 'lr' or 'r'})
+    table.insert(menu, {_p('plugin-bmtiming', 'Autoscratch'), tostring(config.auto_scr), config.auto_scr and 'l' or 'r'})
+    table.insert(menu, {_p('plugin-bmtiming', 'Autokeys'), tostring(config.auto_keys), config.auto_keys and 'l' or 'r'})
+    table.insert(menu, {_p('plugin-bmtiming', 'Autoinput timing'), tostring(config.auto_timing), 'lr'})
+    table.insert(menu, {_p('plugin-bmtiming', 'Rotation amount'), tostring(config.rotate_amount), config.rotate_amount > 0 and 'lr' or 'r'})
+    table.insert(menu, {_p('plugin-bmtiming', 'Active frames'), tostring(config.active_frames), config.active_frames > 0 and 'lr' or 'r'})
     content_height = #menu
 
     local selection = main_selection_save
     main_selection_save = nil
     return menu, selection
-
 end
 
 function lib:handle_menu_event(index, event, config)
@@ -90,64 +89,64 @@ function lib:handle_menu_event(index, event, config)
             return true
         end
     elseif index == 5 then
-        -- Auto scratch
-        manager.machine:popmessage(_p('plugin-bmtiming', 'Auto scratch'))
+        -- Autoscratch
+        manager.machine:popmessage(_p('plugin-bmtiming', 'Enable or disable automatic scratching'))
         if event == 'left' then
-            config.autoscr = false
+            config.auto_scr = false
             return true
         elseif event == 'right' then
-            config.autoscr = true
+            config.auto_scr = true
             return true
         elseif event == 'clear' then
-            config.autoscr = false
+            config.auto_scr = false
             return true
         end
     elseif index == 6 then
-        manager.machine:popmessage(_p('plugin-bmtiming', 'Auto keyboard'))
+        manager.machine:popmessage(_p('plugin-bmtiming', 'Enable or disable automatic key pressing'))
         if event == 'left' then
-            config.autokey = false
+            config.auto_keys = false
             return true
         elseif event == 'right' then
-            config.autokey = true
+            config.auto_keys = true
             return true
         elseif event == 'clear' then
-            config.autokey = false
+            config.auto_keys = false
             return true
         end
     elseif index == 7 then
-        manager.machine:popmessage(_p('plugin-bmtiming', 'Number of flames at press timing'))
+        manager.machine:popmessage(_p('plugin-bmtiming', 'Number of frames from perfect timing to send autoinput'))
         if event == 'left' then
-            config.autotiming = config.autotiming - 1
+            config.auto_timing = config.auto_timing - 1
             return true
         elseif event == 'right' then
-            config.autotiming = config.autotiming + 1
+            config.auto_timing = config.auto_timing + 1
             return true
         elseif event == 'clear' then
-            config.autotiming = 0
+            config.auto_timing = 0
             return true
         end
     elseif index == 8 then
-        manager.machine:popmessage(_p('plugin-bmtiming', 'Amount of turntable rotation'))
+        manager.machine:popmessage(_p('plugin-bmtiming', 'Amount of rotation (MAME value) per scratch'))
         if event == 'left' then
-            config.rotate_angle = config.rotate_angle - 1
+            config.rotate_amount = config.rotate_amount - 1
             return true
         elseif event == 'right' then
-            config.rotate_angle = config.rotate_angle + 1
+            config.rotate_amount = config.rotate_amount + 1
             return true
         elseif event == 'clear' then
-            config.rotate_angle = 10
+            config.rotate_amount = 10
             return true
         end
     elseif index == 9 then
-        manager.machine:popmessage(_p('plugin-bmtiming', 'Number of input duration flames'))
+        manager.machine:popmessage(_p('plugin-bmtiming', 'Number of frames automatic input is active'))
         if event == 'left' then
-            config.on_frames = config.on_frames - 1
+            config.active_frames = config.active_frames - 1
             return true
         elseif event == 'right' then
-            config.on_frames = config.on_frames + 1
+            config.active_frames = config.active_frames + 1
             return true
         elseif event == 'clear' then
-            config.on_frames = 1
+            config.active_frames = 1
             return true
         end
     end

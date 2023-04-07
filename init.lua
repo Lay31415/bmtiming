@@ -1,7 +1,7 @@
 local exports = {
   name = "bmtiming",
   description = "beatmania timing viewer",
-  version = "0.1.2",
+  version = "0.1.3",
   author = { name = "Lay31415" },
   license = "MIT"
 }
@@ -10,11 +10,11 @@ local bmtiming = exports
 
 function bmtiming.startplugin()
   local config = {
-    autoscr = false,
-    autokey = false,
-    autotiming = 0,
-    rotate_angle = 10,
-    on_frames = 1,
+    auto_scr = false,
+    auto_keys = false,
+    auto_timing = 0,
+    rotate_amount = 10,
+    active_frames = 1,
     view_timing = false,
     view_state = false,
   }
@@ -80,25 +80,11 @@ function bmtiming.startplugin()
     {x = 445, y = 328}
   }
 
-  -- Correspondence between keymap and memory index
-  local buttons_map = {
-    Key11 = 1,
-    Key12 = 2,
-    Key13 = 3,
-    Key14 = 4,
-    Key15 = 5,
-    Key21 = 7,
-    Key22 = 8,
-    Key23 = 9,
-    Key24 = 10,
-    Key25 = 11
-  }
-
   -- Variables
   local game
   local addresses
   local mem
-  local s
+  local screen
   local TT
   local turn = {0,0,0,0,0, true, 0,0,0,0,0, true}
   local ioport
@@ -107,12 +93,12 @@ function bmtiming.startplugin()
 
   local function TTrotate(value, turn)
     if turn then
-      value = value + config.rotate_angle
+      value = value + config.rotate_amount
       if value > 256 then
         value = value - 256
       end
     else
-      value = value - config.rotate_angle
+      value = value - config.rotate_amount
       if value < 1 then
         value = value + 256
       end
@@ -129,8 +115,8 @@ function bmtiming.startplugin()
 
     -- Disable autoplay if the address is not known during play.
     if not playing[game] then
-      config.autoscr = false
-      config.autokey = false
+      config.auto_scr = false
+      config.auto_keys = false
     end
 
     -- Set variable only for beatmania titles
@@ -138,23 +124,23 @@ function bmtiming.startplugin()
       -- Set memory
       mem = manager.machine.devices[":maincpu"].spaces["program"]
       -- Set screen
-      s = manager.machine.screens[":screen"]
+      screen = manager.machine.screens[":screen"]
 
       -- Set buttons
       ioport = manager.machine.ioport
       buttons = {
-        ioport.ports[":BTN1"]:field(0x10),
-        ioport.ports[":BTN1"]:field(0x08),
-        ioport.ports[":BTN1"]:field(0x04),
-        ioport.ports[":BTN1"]:field(0x02),
-        ioport.ports[":BTN1"]:field(0x01),
-        ioport.ports[":TT1"]:field(0xff),
-        ioport.ports[":BTN1"]:field(0x40),
-        ioport.ports[":BTN1"]:field(0x80),
-        ioport.ports[":BTN2"]:field(0x01),
-        ioport.ports[":BTN2"]:field(0x02),
-        ioport.ports[":BTN2"]:field(0x04),
-        ioport.ports[":TT2"]:field(0xff),
+        ioport.ports[":BTN1"]:field(0x10), --  1: Key1
+        ioport.ports[":BTN1"]:field(0x08), --  2: Key2
+        ioport.ports[":BTN1"]:field(0x04), --  3: Key3
+        ioport.ports[":BTN1"]:field(0x02), --  4: Key4
+        ioport.ports[":BTN1"]:field(0x01), --  5: Key5
+        ioport.ports[":TT1"]:field(0xff),  --  6: TT1
+        ioport.ports[":BTN1"]:field(0x40), --  7: Key6
+        ioport.ports[":BTN1"]:field(0x80), --  8: Key7
+        ioport.ports[":BTN2"]:field(0x01), --  9: Key8
+        ioport.ports[":BTN2"]:field(0x02), -- 10: Key9
+        ioport.ports[":BTN2"]:field(0x04), -- 11: Key10
+        ioport.ports[":TT2"]:field(0xff),  -- 12: TT2
       }
     end
   end
@@ -172,14 +158,14 @@ function bmtiming.startplugin()
       for i,button in ipairs(buttons) do
         button:clear_value()
       end
-      return
+      return false
     end
 
-    -- View autotiming
-    if config.view_timing and (config.autoscr or config.autokey) then
-      s:draw_text(
+    -- View auto_timing
+    if config.view_timing and (config.auto_scr or config.auto_keys) then
+      screen:draw_text(
         0, 320,
-        string.format("%d", config.autotiming),
+        string.format("%d", config.auto_timing),
         0xffff00ff, 0xcf000000
       )
     end
@@ -213,7 +199,7 @@ function bmtiming.startplugin()
 
       -- Draw timing
       if config.view_timing then
-        s:draw_text(
+        screen:draw_text(
           locations[key]["x"], locations[key]["y"],
           string.format("%4d", timing),
           color, 0xcc000000
@@ -222,7 +208,7 @@ function bmtiming.startplugin()
 
       -- Draw state
       if config.view_state then
-        s:draw_text(
+        screen:draw_text(
           locations[key]["x"], locations[key]["y"]+30,
           string.format("%4d", state),
           0xffffff00, 0xcc000000
@@ -231,7 +217,7 @@ function bmtiming.startplugin()
 
       -- Auto play
       if state ~= 4 then
-        if config.autoscr and (key == 6 or key == 12) then
+        if config.auto_scr and (key == 6 or key == 12) then
           -- Scratch
           -- Set TT
           if key == 6 then
@@ -240,16 +226,16 @@ function bmtiming.startplugin()
             TT = 2
           end
           -- Check timing
-          if config.autotiming - 1 <= timing and timing < config.autotiming + config.on_frames then
-            if config.autotiming - 1 == timing then
+          if config.auto_timing - 1 <= timing and timing < config.auto_timing + config.active_frames then
+            if config.auto_timing - 1 == timing then
               -- Reverse direction of rotation for the first time only
               turn[TT] = not turn[TT]
             end
             buttons[key]:set_value(TTrotate(ioport.ports[":TT" .. TT]:read(), turn[TT]))
           end
-        elseif config.autokey and key ~=6 and key ~= 12 then
+        elseif config.auto_keys and key ~=6 and key ~= 12 then
           -- Keys
-          if config.autotiming - 1 <= timing and timing < config.autotiming + config.on_frames then
+          if config.auto_timing - 1 <= timing and timing < config.auto_timing + config.active_frames then
             buttons[key]:set_value(1)
           else
             buttons[key]:clear_value()
