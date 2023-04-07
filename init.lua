@@ -46,12 +46,12 @@ function bmtiming.startplugin()
   }
   -- Address to determine playing in progress
   local playing = {
-    bm1stmix = 0x408a56,
-    bm2ndmix = 0x409375,
-    bm3rdmix = 0x409737,
+    bm1stmix = 0x407213,
+    bm2ndmix = 0x40742f,
+    bm3rdmix = 0x407825,
     bmcompmx = 0x409915,
-    bmcompmxb = 0x409915,
-    hmcompmx = 0x409907,
+    bmcompmxb = 0x4079c7,
+    hmcompmx = 0x407b89,
     bm4thmix = 0x409ed7,
     bm5thmix = 0x40a035,
     bmcompm2 = 0x40a087,
