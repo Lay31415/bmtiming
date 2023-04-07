@@ -22,3 +22,9 @@ The amount of scratch variation can be adjusted by "Rotate angle". (This is an a
 ## Known Issues
 
 * Sometimes an input occurs in the middle of nothing during autoplay. It seems that there are residual invisible notes in memory, and there is no way to deal with them.
+
+## How to Install
+
+1. Deploy the bmtiming folder in the MAME plugin folder.
+2. Activate the bmtiming plugin in the MAME configuration.
+3. Activate the required features from the plugin settings menu while the game is running.
